@@ -5,6 +5,8 @@ import java.util.List;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 //import android.accessibilityservice.AccessibilityServiceInfo;
 //import android.annotation.TargetApi;
@@ -84,6 +86,7 @@ public class hbSesrvice extends AccessibilityService {
 	    private void openPacket() {  
 	        AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();  
 	       // recycle(nodeInfo);
+	        String msg = "";
 	        if (nodeInfo != null) {  
 	            List<AccessibilityNodeInfo> list = nodeInfo  
 	                    .findAccessibilityNodeInfosByText("ºì°üÏêÇé");  
@@ -115,13 +118,21 @@ public class hbSesrvice extends AccessibilityService {
 	            	String sName = nameInfo.getText().toString();
 	            	String sTime = timeInfo.getText().toString();
 	            	String sFee = feeInfo.getText().toString();
+	            	msg += sName+" : "+ sTime + " :"+ sFee;
 	            	Log.e("wolf",sName+" : "+ sTime + " :"+ sFee);
 	            	 
 	            }        	            
 	            
 	        }  
-	  
+	         Intent intent = new Intent();
+	         intent.setClass(getApplicationContext(), MainActivity.class);
+	         Bundle bundle = new Bundle();
+	         bundle.putString("wolf", msg);
+	         intent.putExtras(bundle);
+	         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	         startActivity(intent);
 	    } 
+	 
 	@Override
 	public void onAccessibilityEvent(AccessibilityEvent event) {
 		// TODO Auto-generated method stub
