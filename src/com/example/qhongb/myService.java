@@ -18,10 +18,7 @@ public class myService extends BroadcastReceiver {
 		DBManager dbm = new DBManager(context);	 
 		dbm.add(persons);		
 		
-		Toast.makeText(  
-                context,  
-                "接收到的Intent的Action为:" + intent.getAction() + "\n消息内容是:"  
-                        + intent.getStringExtra("wolf"), 2000).show();  
+  
 	}
 
 }
