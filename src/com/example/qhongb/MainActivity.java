@@ -50,6 +50,7 @@ public class MainActivity extends Activity {
 				for(LuckPerson p: perons) {
 					msg += p.personName +" ÇÀµ½" + p.money+ "\n";
 					HashMap<String,String> map1=new HashMap<String,String>();
+					map1.put("ptitle",p.title);
 					map1.put("pname",p.personName);
 					map1.put("ptime", p.time);
 					map1.put("pmoney", p.money);
@@ -58,7 +59,7 @@ public class MainActivity extends Activity {
 				Log.e("wolf",msg);
 				//tv.setText(msg); 
 				SimpleAdapter listAdapter=new  SimpleAdapter (context,mylist,R.layout.itemlistview,
-					    new String[]{"pname","ptime","pmoney"},new int[]{R.id.pname,R.id.ptime,R.id.pmoney});
+					    new String[]{"ptitle","pname","ptime","pmoney"},new int[]{R.id.ptitle, R.id.pname,R.id.ptime,R.id.pmoney});
 				 lv.setAdapter(listAdapter);
 				
 			}

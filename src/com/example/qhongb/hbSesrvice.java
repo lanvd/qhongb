@@ -30,6 +30,7 @@ public class hbSesrvice extends AccessibilityService {
 	private static DetailInfo detailInfo;
 	private Map<String, String> mapTitle;
 	private Map<String, LuckPerson> mapPersons;
+	private String strCurHbTitle;
 	// private AccessibilityHelper accessHelper ;
 	static String fileName = "mnt/sdcard/Y.txt";
 
@@ -39,6 +40,7 @@ public class hbSesrvice extends AccessibilityService {
 		detailInfo = new DetailInfo();
 		mapPersons = new HashMap<String, LuckPerson>();
 		mapTitle = new HashMap<String, String>();
+		strCurHbTitle = new String();
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
@@ -318,6 +320,7 @@ public class hbSesrvice extends AccessibilityService {
 						Log.e("wolf", "hongbao title=" + strTitle +"mapTitle len=" + mapTitle.size());
 						if (!mapTitle.containsKey(strTitle)) {
 							mapTitle.put(strTitle, "hongbao title");
+							strCurHbTitle = strTitle;
 							detailInfo.iLastAction = 1;
 							AccessibilityHelper.performClick(hongbaoInfo);
 
@@ -344,6 +347,7 @@ public class hbSesrvice extends AccessibilityService {
 					Object key = iterator.next();
 					LuckPerson p = mapPersons.get(key);
 					Log.e(LOGTAG, p.toString());
+					p.title  = strCurHbTitle;
 					persons.add(p);
 				}
 				Intent intent = new Intent();
