@@ -1,6 +1,8 @@
 package com.example.qhongb;
 
 import java.io.FileOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.accessibilityservice.AccessibilityService;
@@ -22,11 +24,13 @@ import android.widget.Toast;
 
 public class hbSesrvice extends AccessibilityService {
 	private static String LOGTAG ="wolf";
+	private static DetailInfo detailInfo;
+	//private AccessibilityHelper accessHelper ;
 	static String  fileName = "mnt/sdcard/Y.txt";
 	@Override
 	protected void onServiceConnected() {
 		// TODO Auto-generated method stub
-		
+		detailInfo = new DetailInfo();
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		//writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
@@ -81,13 +85,98 @@ public class hbSesrvice extends AccessibilityService {
             }  
         }  
     } 
+	
+	
+	 private boolean isMemberChatUi(AccessibilityNodeInfo nodeInfo) {
+	        if(nodeInfo == null) {
+	            return false;
+	        }
+	        String id = "com.tencent.mm:id/ces";	    
+	        int wv = AccessibilityHelper.getWechatVersion(getApplicationContext());
+	        if(wv <= 680) {
+	            id = "com.tencent.mm:id/ew";
+	        } else if(wv <= 700) {
+	            id = "com.tencent.mm:id/cbo";
+	        }
+	        String title = null;
+	        AccessibilityNodeInfo target = AccessibilityHelper.findNodeInfosById(nodeInfo, id);
+	        if(target != null) {
+	            title = String.valueOf(target.getText());
+	        }
+	        List<AccessibilityNodeInfo> list = nodeInfo.findAccessibilityNodeInfosByText("返回");
+
+	        if(list != null && !list.isEmpty()) {
+	            AccessibilityNodeInfo parent = null;
+	            for(AccessibilityNodeInfo node : list) {
+	                if(!"android.widget.ImageView".equals(node.getClassName())) {
+	                    continue;
+	                }
+	                String desc = String.valueOf(node.getContentDescription());
+	                if(!"返回".equals(desc)) {
+	                    continue;
+	                }
+	                parent = node.getParent();
+	                break;
+	            }
+	            if(parent != null) {
+	                parent = parent.getParent();
+	            }
+	            if(parent != null) {
+	                if( parent.getChildCount() >= 2) {
+	                    AccessibilityNodeInfo node = parent.getChild(1);
+	                    if("android.widget.TextView".equals(node.getClassName())) {
+	                        title = String.valueOf(node.getText());
+	                    }
+	                }
+	            }
+	        }
+
+	        
+	        if(title != null && title.endsWith(")")) {
+	        	Log.e("wolf","群标题=" + title);
+	            return true;
+	        }
+	        return false;
+	    }
+  //iActionId =1 state change 2 content change
   //PackageName: com.tencent.mm; MovementGranularity: 0; Action: 0 [ ClassName: com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI; Text: [微信]; ContentDescription: null; ItemCount: -1; CurrentItemIndex: -1; IsEnabled: true; IsPassword: false; IsChecked: false; IsFullScreen: true; Scrollable: false; BeforeText: null; FromIndex: -1; ToIndex: -1; ScrollX: -1; ScrollY: -1; MaxScrollX: -1; MaxScrollY: -1; AddedCount: -1; RemovedCount: -1; ParcelableData: null ]; recordCount: 0
 	   @SuppressLint("NewApi")  
-	    private void openPacket() {  
+	    private void openPacket(int iActionId) {  
 	        AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();  
+	        final String strListViewId = "com.tencent.mm:id/b9b";  // hongbao listview
+	        final String strEndId = "com.tencent.mm:id/b8k";   // 查看我的红包记录
+	        int iScroll = 0;
 	       // recycle(nodeInfo);
 	        String msg = "";
+	        if (iActionId == 2) {
+	        	try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
 	        if (nodeInfo != null) {  
+	        	 AccessibilityNodeInfo hbListViewNodeInfo = AccessibilityHelper.findNodeInfosById(nodeInfo, strListViewId);
+	        	 AccessibilityNodeInfo hbEndInfo = AccessibilityHelper.findNodeInfosById(nodeInfo, strEndId);
+	        	 
+	        	 if (hbEndInfo !=null) {
+	        		 Log.e(LOGTAG,"结束node找到");	
+	        		 detailInfo.iEnd = 1;
+	        	 } 
+	        	 
+	        	 if (hbListViewNodeInfo != null) {
+	        		 Log.e(LOGTAG,"找到红包list ");
+		        	 if (hbEndInfo !=null) {
+		        		 Log.e(LOGTAG,"找到红包list  结束node找到");	        		 
+		        	 } else {
+		        		 Log.e(LOGTAG,"找到红包list  结束node没有需要scroll");	
+		        		 iScroll  = 1;
+		        		 // AccessibilityHelper.performScrollDown(hbListViewNodeInfo);
+		        	 }
+	        	 }
+	        	 
+	        	 
 	            List<AccessibilityNodeInfo> list = nodeInfo  
 	                    .findAccessibilityNodeInfosByText("红包详情");  
 	           
@@ -95,7 +184,7 @@ public class hbSesrvice extends AccessibilityService {
 	                String text =n.getText().toString();
 	                Log.e("wolf",text);
 	            }  
-	            
+	            // b99    领取12/20个 
 	            List<AccessibilityNodeInfo> listDetail =  nodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b99");  
 	            String strLen = String.valueOf(listDetail.size());
 	            Log.e("wolf",strLen);
@@ -106,6 +195,7 @@ public class hbSesrvice extends AccessibilityService {
 	            List<AccessibilityNodeInfo> listDetailInfo =  nodeInfo.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/aes");  
 	              strLen = String.valueOf(listDetailInfo.size());
 	            Log.e("wolf",strLen);
+	            ArrayList<LuckPerson> persons = new ArrayList<LuckPerson>();	            
 	            for (AccessibilityNodeInfo n : listDetailInfo) {  
 	            	 
 	            	 Log.e("wolf","===========================================");
@@ -115,22 +205,51 @@ public class hbSesrvice extends AccessibilityService {
 	            	AccessibilityNodeInfo timeInfo = n.getChild(1);
 	            	AccessibilityNodeInfo feeInfo  = n.getChild(2);
 	 
-	            	String sName = nameInfo.getText().toString();
-	            	String sTime = timeInfo.getText().toString();
-	            	String sFee = feeInfo.getText().toString();
+	            	String sName ="";
+	            	String sTime  ="";
+	            	String sFee  ="";
+				if (nameInfo != null) {
+					sName = nameInfo.getText().toString();
+				} else {
+					continue;
+				}
+				if (timeInfo != null) {
+					sTime = timeInfo.getText().toString();
+				}
+				if (feeInfo != null) {
+					sFee = feeInfo.getText().toString();
+				}
+
 	            	msg += sName+" : "+ sTime + " :"+ sFee;
+	            	LuckPerson p = new LuckPerson("","",sName,sTime,sFee);
+	            	persons.add(p);
 	            	Log.e("wolf",sName+" : "+ sTime + " :"+ sFee);
 	            	 
 	            }        	            
-	            
+		        Intent intent = new Intent();
+		        intent.setAction("wolf.test");
+		        Bundle bundle = new Bundle();
+		        bundle.putSerializable("user", persons);
+		        intent.putExtras(bundle);
+		        sendBroadcast(intent);  
+		        if (iScroll == 1) {
+		        	AccessibilityHelper.performScrollDown(hbListViewNodeInfo);
+		        }
+		        
 	        }  
+	        /*
 	         Intent intent = new Intent();
 	         intent.setClass(getApplicationContext(), MainActivity.class);
 	         Bundle bundle = new Bundle();
 	         bundle.putString("wolf", msg);
-	         intent.putExtras(bundle);
+	         intent.putExtra("kate",bundle);
 	         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	         
+	         
 	         startActivity(intent);
+	         */
+
+	        
 	    } 
 	 
 	@Override
@@ -138,22 +257,33 @@ public class hbSesrvice extends AccessibilityService {
 		// TODO Auto-generated method stub
 		//Toast.makeText(this, event.toString(), 1).show();
 		Log.e(LOGTAG, "事件--->" + event);
+		String className = "";
 		//writeFileSdcard(fileName,event.toString());
 		int eventType = event.getEventType();
 		switch (eventType) {
 		case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
-			String className = event.getClassName().toString();
+			className = event.getClassName().toString();
 			if (className.equals("com.tencent.mm.ui.LauncherUI")) {
 				// 开始抢红包
 				// getPacket();
+				boolean isMmberUi = isMemberChatUi(getRootInActiveWindow());
+				
 			} else if (className
 					.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI")) {
 				Log.e(LOGTAG, "红包详情");
 				// 开始打开红包
-				 openPacket();
+				detailInfo.iLastAction = 1;
+				 openPacket(1);
 			}
 			break;
-
+		case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+		   // className = event.getClassName().toString();	
+			 openPacket(2);	
+		    if (detailInfo.iEnd == 0) {
+		    		    	
+		    }
+		    
+			break;
 		}
 
 	}
