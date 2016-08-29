@@ -10,6 +10,9 @@ import java.util.Map;
 
 import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +24,7 @@ import android.util.Log;
 //import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.EditText;
 import android.widget.Toast;
 //import android.view.accessibility.AccessibilityManager;
 //import android.widget.Toast;
@@ -33,6 +37,7 @@ public class hbSesrvice extends AccessibilityService {
 	private String strCurHbTitle;
 	// private AccessibilityHelper accessHelper ;
 	static String fileName = "mnt/sdcard/Y.txt";
+	private int iflag;
 
 	@Override
 	protected void onServiceConnected() {
@@ -44,6 +49,7 @@ public class hbSesrvice extends AccessibilityService {
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
+		iflag =0;
 		super.onServiceConnected();
 	}
 
@@ -75,6 +81,7 @@ public class hbSesrvice extends AccessibilityService {
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		iflag = 0;
 		Log.d(LOGTAG, "SERVICE DESTORY");
 		Toast.makeText(this, "服务destory", Toast.LENGTH_LONG).show();
 	}
@@ -250,13 +257,12 @@ public class hbSesrvice extends AccessibilityService {
 				Log.e("wolf", sName + " : " + sTime + " :" + sFee);
 
 			}
- 
+
 			if (iScroll == 1) {
 				AccessibilityHelper.performScrollDown(hbListViewNodeInfo);
 			}
 
 		}
- 
 
 	}
 
@@ -272,29 +278,29 @@ public class hbSesrvice extends AccessibilityService {
 		switch (eventType) {
 		case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
 			className = event.getClassName().toString();
-
+			
 			if (className.equals("com.tencent.mm.ui.LauncherUI")) {
 				// 开始抢红包
 				// getPacket();
-/*				String strHongbaoInfo = "com.tencent.mm:id/a13";
-				boolean isMmberUi = isMemberChatUi(rootInfo);
-				if (isMmberUi == true) {
-					AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
-							.findNodeInfosById(rootInfo, strHongbaoInfo);
-					String strHongbaoTitle = "com.tencent.mm:id/a1m";
-					AccessibilityNodeInfo hongbaotitle = AccessibilityHelper
-							.findNodeInfosById(hongbaoInfo, strHongbaoTitle);
-					String strTitle = hongbaotitle.getText().toString();
-					Log.e("wolf", "hongbao title=" + strTitle);
-					if (!mapTitle.containsKey(strTitle)) {
-						mapTitle.put(strTitle, "hongbao title");
-						AccessibilityHelper.performClick(hongbaoInfo);
-					}
-				}*/
+				/*
+				 * String strHongbaoInfo = "com.tencent.mm:id/a13"; boolean
+				 * isMmberUi = isMemberChatUi(rootInfo); if (isMmberUi == true)
+				 * { AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
+				 * .findNodeInfosById(rootInfo, strHongbaoInfo); String
+				 * strHongbaoTitle = "com.tencent.mm:id/a1m";
+				 * AccessibilityNodeInfo hongbaotitle = AccessibilityHelper
+				 * .findNodeInfosById(hongbaoInfo, strHongbaoTitle); String
+				 * strTitle = hongbaotitle.getText().toString(); Log.e("wolf",
+				 * "hongbao title=" + strTitle); if
+				 * (!mapTitle.containsKey(strTitle)) { mapTitle.put(strTitle,
+				 * "hongbao title");
+				 * AccessibilityHelper.performClick(hongbaoInfo); } }
+				 */
 
 			} else if (className
 					.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI")) {
 				Log.e(LOGTAG, "红包详情");
+				
 				// 开始打开红包
 				if (detailInfo.iLastAction == 1) {
 					detailInfo.iLastAction = 2;
@@ -306,8 +312,27 @@ public class hbSesrvice extends AccessibilityService {
 		case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
 			// className = event.getClassName().toString();
 			String strHongbaoInfo = "com.tencent.mm:id/a13";
+			String strInputInfo = "com.tencent.mm:id/z4";
+			String strSendButtonInfo = "com.tencent.mm:id/z_";
 			boolean isMmberUi = isMemberChatUi(rootInfo);
-			
+
+			if (isMmberUi == true) {
+				String firstPerson = AccessibilityHelper.firstPersonSay(rootInfo,"自动发红包吗?");
+				Log.e("wolf","find first pp=" + firstPerson);
+				AccessibilityNodeInfo inputInfo = AccessibilityHelper
+						.findNodeInfosById(rootInfo, strInputInfo);
+				iflag = 1;	
+				if (inputInfo != null  && iflag ==0) {
+					Context context = getBaseContext();
+					AccessibilityHelper.doSendText(rootInfo, context, "开始");
+					iflag = 1;				 
+				}
+			}
+
+			if (1 == 1) {
+				return;
+			}
+
 			if (isMmberUi == true) {
 				AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strHongbaoInfo);
@@ -317,17 +342,20 @@ public class hbSesrvice extends AccessibilityService {
 							.findNodeInfosById(hongbaoInfo, strHongbaoTitle);
 					if (hongbaotitle != null) {
 						String strTitle = hongbaotitle.getText().toString();
-						Log.e("wolf", "hongbao title=" + strTitle +"mapTitle len=" + mapTitle.size());
+						Log.e("wolf", "hongbao title=" + strTitle
+								+ "mapTitle len=" + mapTitle.size());
 						if (!mapTitle.containsKey(strTitle)) {
 							mapTitle.put(strTitle, "hongbao title");
 							strCurHbTitle = strTitle;
 							detailInfo.iLastAction = 1;
 							AccessibilityHelper.performClick(hongbaoInfo);
 
+						} else {
+
 						}
 					}
 				}
-				
+
 			} else {
 				if (detailInfo.iLastAction == 2) {
 					detailInfo.iLastAction = 3;
@@ -336,7 +364,7 @@ public class hbSesrvice extends AccessibilityService {
 					openPacket(1);
 				}
 			}
-			
+
 			if (detailInfo.iEnd == 1) {
 				Log.e(LOGTAG, "结束");
 				String stsBack = "com.tencent.mm:id/fa";
@@ -347,7 +375,7 @@ public class hbSesrvice extends AccessibilityService {
 					Object key = iterator.next();
 					LuckPerson p = mapPersons.get(key);
 					Log.e(LOGTAG, p.toString());
-					p.title  = strCurHbTitle;
+					p.title = strCurHbTitle;
 					persons.add(p);
 				}
 				Intent intent = new Intent();
@@ -356,7 +384,7 @@ public class hbSesrvice extends AccessibilityService {
 				bundle.putSerializable("user", persons);
 				intent.putExtras(bundle);
 				sendBroadcast(intent);
-				Log.e(LOGTAG, "结束 map len=" + strMsg);		 
+				Log.e(LOGTAG, "结束 map len=" + strMsg);
 				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
 				AccessibilityNodeInfo hBack = AccessibilityHelper
 						.findNodeInfosById(nodeInfo, stsBack);

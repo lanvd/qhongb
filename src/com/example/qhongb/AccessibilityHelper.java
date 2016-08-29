@@ -1,20 +1,24 @@
 package com.example.qhongb;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class AccessibilityHelper {
 	public static final String WECHAT_PACKAGENAME = "com.tencent.mm";
-
+	public  static ConfigStr ActionConfig;
 	private AccessibilityHelper() {
 	}
 
@@ -157,5 +161,85 @@ public final class AccessibilityHelper {
 		} else {
 			performClick(nodeInfo.getParent());
 		}
+	}	
+	public static void doSendText(AccessibilityNodeInfo rootInfo, Context context, String strText  ) {
+		if (rootInfo == null) {
+			return;
+		}
+		AccessibilityNodeInfo inputInfo = AccessibilityHelper
+				.findNodeInfosById(rootInfo, ActionConfig.S_INPUT_TEXT);
+		inputInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+		inputInfo.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
+		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+		ClipData clip = ClipData.newPlainText("text", "开始");
+		clipboard.setPrimaryClip(clip);
+		inputInfo.performAction(AccessibilityNodeInfo.ACTION_PASTE);
+		AccessibilityNodeInfo sendButtonInfo = AccessibilityHelper
+				.findNodeInfosById(rootInfo, ActionConfig.S_SEND_BUTTON);
+		AccessibilityHelper.performClick(sendButtonInfo);
+		
+	}	
+	
+	public static void recycle(AccessibilityNodeInfo info) {
+		String LOGTAG ="wolf";
+		String strTemp = String.valueOf(info.getChildCount());
+		Log.e(LOGTAG, strTemp);
+		if (info.getChildCount() == 0) {
+			Log.e(LOGTAG,
+					"child widget----------------------------"
+							+ info.getClassName());
+
+			Log.e(LOGTAG, "Text：" + info.getText());
+			Log.e(LOGTAG,
+					"getViewIdResourceName:" + info.getViewIdResourceName());
+		} else {
+			for (int i = 0; i < info.getChildCount(); i++) {
+				if (info.getChild(i) != null) {
+					recycle(info.getChild(i));
+				}
+			}
+		}
+	}
+	public static String firstPersonSay(AccessibilityNodeInfo rootInfo,   String strText  ) {
+		if (rootInfo == null) {
+			return "null";
+		}
+		String firstPerson = "null";
+		List<AccessibilityNodeInfo> listDetailInfo = rootInfo
+				.findAccessibilityNodeInfosByViewId(ActionConfig.S_CHAT_ITME);
+		 
+		if (listDetailInfo != null && ! listDetailInfo.isEmpty()) {
+			for (AccessibilityNodeInfo n : listDetailInfo) {
+				Log.e("wolf","====================="  );
+				recycle(n);
+				Log.e("wolf","=====================");
+				if (n != null) {
+					if (n.getChildCount() > 1) {
+						AccessibilityNodeInfo infoTab = n.getChild(1);
+						if (infoTab.getChildCount() < 2) {
+							continue;
+						}
+						AccessibilityNodeInfo  pNameTab = infoTab.getChild(0);
+						AccessibilityNodeInfo  pTextTab = infoTab.getChild(1);
+						String strName = pNameTab.getText().toString();
+						String strSayText = pNameTab.getText().toString();
+											
+						Log.e("wolf",strName+" : " + strSayText);
+						if (strSayText == strText) {
+							firstPerson = strName;
+							break;
+						}
+						
+						
+					}
+					
+					
+					
+				}
+			}
+			
+		}
+		return firstPerson;
+		
 	}	
 }
