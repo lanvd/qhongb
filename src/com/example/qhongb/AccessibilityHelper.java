@@ -18,7 +18,8 @@ import java.util.List;
 
 public final class AccessibilityHelper {
 	public static final String WECHAT_PACKAGENAME = "com.tencent.mm";
-	public  static ConfigStr ActionConfig;
+	public static ConfigStr ActionConfig;
+
 	private AccessibilityHelper() {
 	}
 
@@ -136,7 +137,7 @@ public final class AccessibilityHelper {
 		if (nodeInfo == null) {
 			return;
 		}
-		//nodeInfo.performAction(AccessibilityService.GLOBAL_ACTION_BACK);
+		// nodeInfo.performAction(AccessibilityService.GLOBAL_ACTION_BACK);
 	}
 
 	/** 鐐瑰嚮浜嬩欢 */
@@ -150,19 +151,22 @@ public final class AccessibilityHelper {
 			performClick(nodeInfo.getParent());
 		}
 	}
+
 	public static void performScrollDown(AccessibilityNodeInfo nodeInfo) {
 		if (nodeInfo == null) {
 			return;
 		}
 		if (nodeInfo.isScrollable()) {
 			Bundle bundle = new Bundle();
-	 
-			nodeInfo.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD );
+
+			nodeInfo.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
 		} else {
 			performClick(nodeInfo.getParent());
 		}
-	}	
-	public static void doSendText(AccessibilityNodeInfo rootInfo, Context context, String strText  ) {
+	}
+
+	public static void doSendText(AccessibilityNodeInfo rootInfo,
+			Context context, String strText) {
 		if (rootInfo == null) {
 			return;
 		}
@@ -170,18 +174,19 @@ public final class AccessibilityHelper {
 				.findNodeInfosById(rootInfo, ActionConfig.S_INPUT_TEXT);
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
-		ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+		ClipboardManager clipboard = (ClipboardManager) context
+				.getSystemService(Context.CLIPBOARD_SERVICE);
 		ClipData clip = ClipData.newPlainText("text", "开始");
 		clipboard.setPrimaryClip(clip);
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_PASTE);
 		AccessibilityNodeInfo sendButtonInfo = AccessibilityHelper
 				.findNodeInfosById(rootInfo, ActionConfig.S_SEND_BUTTON);
 		AccessibilityHelper.performClick(sendButtonInfo);
-		
-	}	
-	
+
+	}
+
 	public static void recycle(AccessibilityNodeInfo info) {
-		String LOGTAG ="wolf";
+		String LOGTAG = "wolf";
 		String strTemp = String.valueOf(info.getChildCount());
 		Log.e(LOGTAG, strTemp);
 		if (info.getChildCount() == 0) {
@@ -200,46 +205,55 @@ public final class AccessibilityHelper {
 			}
 		}
 	}
-	public static String firstPersonSay(AccessibilityNodeInfo rootInfo,   String strText  ) {
+
+	public static String firstPersonSay(AccessibilityNodeInfo rootInfo,
+			String strText) {
 		if (rootInfo == null) {
 			return "null";
 		}
 		String firstPerson = "null";
 		List<AccessibilityNodeInfo> listDetailInfo = rootInfo
 				.findAccessibilityNodeInfosByViewId(ActionConfig.S_CHAT_ITME);
-		 
-		if (listDetailInfo != null && ! listDetailInfo.isEmpty()) {
+		int i = 0;
+		if (listDetailInfo != null && !listDetailInfo.isEmpty()) {
 			for (AccessibilityNodeInfo n : listDetailInfo) {
-				Log.e("wolf","====================="  );
-				recycle(n);
-				Log.e("wolf","=====================");
+				//Log.e("wolf", "=====================i=" + i);
+				//recycle(n);
+				//Log.e("wolf", "====================i=" + i);
+				i = i + 1;
 				if (n != null) {
-					if (n.getChildCount() > 1) {
-						AccessibilityNodeInfo infoTab = n.getChild(1);
-						if (infoTab.getChildCount() < 2) {
-							continue;
-						}
-						AccessibilityNodeInfo  pNameTab = infoTab.getChild(0);
-						AccessibilityNodeInfo  pTextTab = infoTab.getChild(1);
-						String strName = pNameTab.getText().toString();
-						String strSayText = pNameTab.getText().toString();
-											
-						Log.e("wolf",strName+" : " + strSayText);
-						if (strSayText == strText) {
-							firstPerson = strName;
-							break;
-						}
-						
-						
+					AccessibilityNodeInfo personItemTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_PERSON);
+					AccessibilityNodeInfo contentTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_CONTENT);
+					AccessibilityNodeInfo imageTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_IMAGE);
+					String strName = "";
+					String strSayText = "";
+					if (imageTab != null) {
+						Log.e("wolf","image=" +imageTab.toString());
 					}
-					
-					
-					
+					if (personItemTab != null) {
+						strName = personItemTab.getText().toString();
+					}
+					if (contentTab != null) {
+						strSayText = contentTab.getText().toString();
+					}
+
+					Log.e("wolf", strName + " : " + strSayText);
+					if (strSayText.compareTo(strText) == 0  ) {
+						firstPerson = strName;
+						break;
+					}
+
 				}
 			}
-			
+
 		}
 		return firstPerson;
-		
-	}	
+
+	}
 }

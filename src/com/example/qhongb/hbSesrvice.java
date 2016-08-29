@@ -317,7 +317,7 @@ public class hbSesrvice extends AccessibilityService {
 			boolean isMmberUi = isMemberChatUi(rootInfo);
 
 			if (isMmberUi == true) {
-				String firstPerson = AccessibilityHelper.firstPersonSay(rootInfo,"自动发红包吗?");
+				String firstPerson = AccessibilityHelper.firstPersonSay(rootInfo,"自动发红包吗？");
 				Log.e("wolf","find first pp=" + firstPerson);
 				AccessibilityNodeInfo inputInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strInputInfo);
