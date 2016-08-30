@@ -14,8 +14,21 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 //import android.accessibilityservice.AccessibilityServiceInfo;
 //import android.annotation.TargetApi;
 //import android.content.Context;
@@ -24,7 +37,9 @@ import android.util.Log;
 //import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 //import android.view.accessibility.AccessibilityManager;
 //import android.widget.Toast;
@@ -34,10 +49,24 @@ public class hbSesrvice extends AccessibilityService {
 	private static DetailInfo detailInfo;
 	private Map<String, String> mapTitle;
 	private Map<String, LuckPerson> mapPersons;
+	private Map<String,String> detManList;
 	private String strCurHbTitle;
 	// private AccessibilityHelper accessHelper ;
 	static String fileName = "mnt/sdcard/Y.txt";
 	private int iflag;
+
+	private static final int UPDATE_PIC = 0x100;
+	private int statusBarHeight;// 状态栏高度
+	private View view;// 透明窗体
+	private TextView text = null;
+	private Button hideBtn = null;
+	private Button updateBtn = null;
+	private HandlerUI handler = null;
+	private Thread updateThread = null;
+	private boolean viewAdded = false;// 透明窗体是否已经显示
+	private boolean viewHide = false; // 窗口隐藏
+	private WindowManager windowManager;
+	private WindowManager.LayoutParams layoutParams;
 
 	@Override
 	protected void onServiceConnected() {
@@ -49,7 +78,7 @@ public class hbSesrvice extends AccessibilityService {
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
-		iflag =0;
+		iflag = 0;
 		super.onServiceConnected();
 	}
 
@@ -76,11 +105,37 @@ public class hbSesrvice extends AccessibilityService {
 		}
 
 	}
+	 /** 
+     * 关闭悬浮窗 
+     */  
+    public void removeView() {  
+        if (viewAdded) {  
+            windowManager.removeView(view);  
+            viewAdded = false;  
+        }  
+    }  
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		super.onCreate();
+		 createFloatView(); 
+	}
+
+ 
+	@SuppressWarnings("deprecation")
+	@Override
+	public void onStart(Intent intent, int startId) {
+		// TODO Auto-generated method stub
+		super.onStart(intent, startId);
+		 viewHide = false;  
+	        refresh();  
+	}
 
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
+		removeView();  
 		iflag = 0;
 		Log.d(LOGTAG, "SERVICE DESTORY");
 		Toast.makeText(this, "服务destory", Toast.LENGTH_LONG).show();
@@ -271,36 +326,37 @@ public class hbSesrvice extends AccessibilityService {
 		// TODO Auto-generated method stub
 		// Toast.makeText(this, event.toString(), 1).show();
 		Log.e(LOGTAG, "事件--->" + event);
+		String strHongbaoInfo = "com.tencent.mm:id/a13";
+		String strInputInfo = "com.tencent.mm:id/z4";
+		String strSendButtonInfo = "com.tencent.mm:id/z_";
 		String className = "";
 		// writeFileSdcard(fileName,event.toString());
 		int eventType = event.getEventType();
+		className = event.getClassName().toString();
+		if (className.equals("android.widget.TextView")) {
+			Log.e(LOGTAG, "事件--->" + event);
+		}
 		AccessibilityNodeInfo rootInfo = getRootInActiveWindow();
 		switch (eventType) {
 		case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
-			className = event.getClassName().toString();
-			
+
 			if (className.equals("com.tencent.mm.ui.LauncherUI")) {
-				// 开始抢红包
-				// getPacket();
-				/*
-				 * String strHongbaoInfo = "com.tencent.mm:id/a13"; boolean
-				 * isMmberUi = isMemberChatUi(rootInfo); if (isMmberUi == true)
-				 * { AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
-				 * .findNodeInfosById(rootInfo, strHongbaoInfo); String
-				 * strHongbaoTitle = "com.tencent.mm:id/a1m";
-				 * AccessibilityNodeInfo hongbaotitle = AccessibilityHelper
-				 * .findNodeInfosById(hongbaoInfo, strHongbaoTitle); String
-				 * strTitle = hongbaotitle.getText().toString(); Log.e("wolf",
-				 * "hongbao title=" + strTitle); if
-				 * (!mapTitle.containsKey(strTitle)) { mapTitle.put(strTitle,
-				 * "hongbao title");
-				 * AccessibilityHelper.performClick(hongbaoInfo); } }
-				 */
+				boolean isMmberUi = isMemberChatUi(rootInfo);
+				if (isMmberUi == true && iflag ==1) {
+					AccessibilityNodeInfo inputInfo = AccessibilityHelper
+							.findNodeInfosById(rootInfo, strInputInfo);
+					 
+					if (inputInfo != null  ) {
+						Context context = getBaseContext();				 
+						AccessibilityHelper.doSendText(rootInfo, context, "开始");
+						iflag = 2;
+					}
+				}
 
 			} else if (className
 					.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI")) {
 				Log.e(LOGTAG, "红包详情");
-				
+
 				// 开始打开红包
 				if (detailInfo.iLastAction == 1) {
 					detailInfo.iLastAction = 2;
@@ -311,22 +367,34 @@ public class hbSesrvice extends AccessibilityService {
 			break;
 		case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
 			// className = event.getClassName().toString();
-			String strHongbaoInfo = "com.tencent.mm:id/a13";
-			String strInputInfo = "com.tencent.mm:id/z4";
-			String strSendButtonInfo = "com.tencent.mm:id/z_";
-			boolean isMmberUi = isMemberChatUi(rootInfo);
 
-			if (isMmberUi == true) {
-				String firstPerson = AccessibilityHelper.firstPersonSay(rootInfo,"自动发红包吗？");
-				Log.e("wolf","find first pp=" + firstPerson);
+			boolean isMmberUi = isMemberChatUi(rootInfo);
+			Log.e("wolf","iflag=" + String.valueOf(iflag));
+			if (isMmberUi == true && iflag ==1) {
 				AccessibilityNodeInfo inputInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strInputInfo);
-				iflag = 1;	
-				if (inputInfo != null  && iflag ==0) {
-					Context context = getBaseContext();
+				 
+				if (inputInfo != null  ) {
+					Context context = getBaseContext();				 
 					AccessibilityHelper.doSendText(rootInfo, context, "开始");
-					iflag = 1;				 
+					iflag = 2;
 				}
+			}
+			if (isMmberUi == true && iflag == 2) {
+				String firstPerson = AccessibilityHelper.firstPersonSay(
+						rootInfo, "抢");
+				Log.e("wolf", "find first pp=" + firstPerson);
+				AccessibilityNodeInfo inputInfo = AccessibilityHelper
+						.findNodeInfosById(rootInfo, strInputInfo);
+				 if (firstPerson != "null") {
+						if (inputInfo != null  ) {
+							Context context = getBaseContext();
+							String firstMsg = firstPerson + "为庄开始押注上分";
+							AccessibilityHelper.doSendText(rootInfo, context, firstMsg);
+							iflag = 3;
+						} 
+				 }
+
 			}
 
 			if (1 == 1) {
@@ -400,6 +468,169 @@ public class hbSesrvice extends AccessibilityService {
 	public void onInterrupt() {
 		// TODO Auto-generated method stub
 
+	}
+
+	private void createFloatView() {
+		handler = new HandlerUI();
+		UpdateUI update = new UpdateUI();
+		updateThread = new Thread(update);
+		updateThread.start(); // 开户线程
+
+		view = LayoutInflater.from(this).inflate(R.layout.floatview, null);
+		text = (TextView) view.findViewById(R.id.flowspeed);
+		hideBtn = (Button) view.findViewById(R.id.hideBtn);
+		updateBtn = (Button) view.findViewById(R.id.updateBtn);
+		windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
+		/*
+		 * LayoutParams.TYPE_SYSTEM_ERROR：保证该悬浮窗所有View的最上层
+		 * LayoutParams.FLAG_NOT_FOCUSABLE:该浮动窗不会获得焦点，但可以获得拖动
+		 * PixelFormat.TRANSPARENT：悬浮窗透明
+		 */
+		layoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT, LayoutParams.TYPE_SYSTEM_ERROR,
+				LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSPARENT);
+		// layoutParams.gravity = Gravity.RIGHT|Gravity.BOTTOM; //悬浮窗开始在右下角显示
+		layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+		/**
+		 * 监听窗体移动事件
+		 */
+		view.setOnTouchListener(new OnTouchListener() {
+			float[] temp = new float[] { 0f, 0f };
+
+			public boolean onTouch(View v, MotionEvent event) {
+				layoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+				int eventaction = event.getAction();
+				switch (eventaction) {
+				case MotionEvent.ACTION_DOWN: // 按下事件，记录按下时手指在悬浮窗的XY坐标值
+					temp[0] = event.getX();
+					temp[1] = event.getY();
+					break;
+
+				case MotionEvent.ACTION_MOVE:
+					refreshView((int) (event.getRawX() - temp[0]),
+							(int) (event.getRawY() - temp[1]));
+					break;
+
+				}
+				return true;
+			}
+
+			 
+		});
+
+		hideBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				viewHide = true;
+				//removeView();
+				
+				System.out.println("----------hideBtn");
+			}
+		});
+
+		updateBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				iflag= 1;
+				Toast.makeText(getApplicationContext(), "you click UpdateBtn",
+						Toast.LENGTH_SHORT).show();
+		     
+			}
+		});
+	}
+
+	private void refreshView(int x, int y) {
+		// 状态栏高度不能立即取，不然得到的值是0
+		if (statusBarHeight == 0) {
+			View rootView = view.getRootView();
+			Rect r = new Rect();
+			rootView.getWindowVisibleDisplayFrame(r);
+			statusBarHeight = r.top;
+		}
+
+		layoutParams.x = x;
+		// y轴减去状态栏的高度，因为状态栏不是用户可以绘制的区域，不然拖动的时候会有跳动
+		layoutParams.y = y - statusBarHeight;// STATUS_HEIGHT;
+		refresh();
+	}
+
+	/**
+	 * 添加悬浮窗或者更新悬浮窗 如果悬浮窗还没添加则添加 如果已经添加则更新其位置
+	 */
+	private void refresh() {
+		// 如果已经添加了就只更新view
+		if (viewAdded) {
+			windowManager.updateViewLayout(view, layoutParams);
+		} else {
+			windowManager.addView(view, layoutParams);
+			viewAdded = true;
+		}
+	}
+
+	/**
+	 * 接受消息和处理消息
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	class HandlerUI extends Handler {
+		public HandlerUI() {
+
+		}
+
+		public HandlerUI(Looper looper) {
+			super(looper);
+		}
+
+		/**
+		 * 接收消息
+		 */
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			// 根据收到的消息分别处理
+			if (msg.what == UPDATE_PIC) {
+			 
+				if (!viewHide)
+					refresh();
+			} else {
+				super.handleMessage(msg);
+			}
+
+		}
+
+	}
+
+	/**
+	 * 更新悬浮窗的信息
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	class UpdateUI implements Runnable {
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			// 如果没有中断就一直运行
+			while (!Thread.currentThread().isInterrupted()) {
+				Message msg = handler.obtainMessage();
+				msg.what = UPDATE_PIC; // 设置消息标识
+				handler.sendMessage(msg);
+				// 休眠1s
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }

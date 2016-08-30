@@ -15,6 +15,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class AccessibilityHelper {
 	public static final String WECHAT_PACKAGENAME = "com.tencent.mm";
@@ -172,11 +173,14 @@ public final class AccessibilityHelper {
 		}
 		AccessibilityNodeInfo inputInfo = AccessibilityHelper
 				.findNodeInfosById(rootInfo, ActionConfig.S_INPUT_TEXT);
+		if (inputInfo == null) {
+			return;
+		}
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_FOCUS);
 		ClipboardManager clipboard = (ClipboardManager) context
 				.getSystemService(Context.CLIPBOARD_SERVICE);
-		ClipData clip = ClipData.newPlainText("text", "开始");
+		ClipData clip = ClipData.newPlainText("text", strText);
 		clipboard.setPrimaryClip(clip);
 		inputInfo.performAction(AccessibilityNodeInfo.ACTION_PASTE);
 		AccessibilityNodeInfo sendButtonInfo = AccessibilityHelper
@@ -211,6 +215,7 @@ public final class AccessibilityHelper {
 		if (rootInfo == null) {
 			return "null";
 		}
+		
 		String firstPerson = "null";
 		List<AccessibilityNodeInfo> listDetailInfo = rootInfo
 				.findAccessibilityNodeInfosByViewId(ActionConfig.S_CHAT_ITME);
@@ -248,6 +253,53 @@ public final class AccessibilityHelper {
 						firstPerson = strName;
 						break;
 					}
+
+				}
+			}
+
+		}
+		return firstPerson;
+
+	}
+	
+	
+	public static String updateSayInfoNum(AccessibilityNodeInfo rootInfo,
+			Map<String ,String> manList) {
+		if (rootInfo == null) {
+			return "null";
+		}
+		
+		String firstPerson = "null";
+		List<AccessibilityNodeInfo> listDetailInfo = rootInfo
+				.findAccessibilityNodeInfosByViewId(ActionConfig.S_CHAT_ITME);
+		int i = 0;
+		if (listDetailInfo != null && !listDetailInfo.isEmpty()) {
+			for (AccessibilityNodeInfo n : listDetailInfo) {
+				//Log.e("wolf", "=====================i=" + i);
+				//recycle(n);
+				//Log.e("wolf", "====================i=" + i);
+				i = i + 1;
+				if (n != null) {
+					AccessibilityNodeInfo personItemTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_PERSON);
+					AccessibilityNodeInfo contentTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_CONTENT);
+					AccessibilityNodeInfo imageTab = AccessibilityHelper
+							.findNodeInfosById(n,
+									ActionConfig.S_CHAT_ITME_IMAGE);
+					String strName = "";
+					String strSayText = "";
+		 
+					if (personItemTab != null) {
+						strName = personItemTab.getText().toString();
+					}
+					if (contentTab != null) {
+						strSayText = contentTab.getText().toString();
+					}
+					manList.
+					 
 
 				}
 			}
