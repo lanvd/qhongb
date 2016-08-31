@@ -261,12 +261,20 @@ public final class AccessibilityHelper {
 		return firstPerson;
 
 	}
+	public static boolean isNumeric(String str){
+		  for (int i = 0; i < str.length(); i++){
+		   System.out.println(str.charAt(i));
+		   if (!Character.isDigit(str.charAt(i))){
+		    return false;
+		   }
+		  }
+		  return true;
+		 }
 	
-	
-	public static String updateSayInfoNum(AccessibilityNodeInfo rootInfo,
+	public static void updateSayInfoNum(AccessibilityNodeInfo rootInfo,
 			Map<String ,String> manList) {
 		if (rootInfo == null) {
-			return "null";
+			return  ;
 		}
 		
 		String firstPerson = "null";
@@ -298,14 +306,17 @@ public final class AccessibilityHelper {
 					if (contentTab != null) {
 						strSayText = contentTab.getText().toString();
 					}
-					manList.
+					if (isNumeric(strSayText)) {
+						manList.put(strName, strSayText);
+					}
+					
 					 
 
 				}
 			}
 
 		}
-		return firstPerson;
+		 
 
 	}
 }

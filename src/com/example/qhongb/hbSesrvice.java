@@ -49,7 +49,7 @@ public class hbSesrvice extends AccessibilityService {
 	private static DetailInfo detailInfo;
 	private Map<String, String> mapTitle;
 	private Map<String, LuckPerson> mapPersons;
-	private Map<String,String> detManList;
+	private Map<String, String> detManList;
 	private String strCurHbTitle;
 	// private AccessibilityHelper accessHelper ;
 	static String fileName = "mnt/sdcard/Y.txt";
@@ -79,6 +79,7 @@ public class hbSesrvice extends AccessibilityService {
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
 		iflag = 0;
+		detManList = new HashMap<String, String>();
 		super.onServiceConnected();
 	}
 
@@ -105,37 +106,38 @@ public class hbSesrvice extends AccessibilityService {
 		}
 
 	}
-	 /** 
-     * 关闭悬浮窗 
-     */  
-    public void removeView() {  
-        if (viewAdded) {  
-            windowManager.removeView(view);  
-            viewAdded = false;  
-        }  
-    }  
+
+	/**
+	 * 关闭悬浮窗
+	 */
+	public void removeView() {
+		if (viewAdded) {
+			windowManager.removeView(view);
+			viewAdded = false;
+		}
+	}
+
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
-		 createFloatView(); 
+		createFloatView();
 	}
 
- 
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onStart(Intent intent, int startId) {
 		// TODO Auto-generated method stub
 		super.onStart(intent, startId);
-		 viewHide = false;  
-	        refresh();  
+		viewHide = false;
+		refresh();
 	}
 
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		removeView();  
+		removeView();
 		iflag = 0;
 		Log.d(LOGTAG, "SERVICE DESTORY");
 		Toast.makeText(this, "服务destory", Toast.LENGTH_LONG).show();
@@ -342,12 +344,12 @@ public class hbSesrvice extends AccessibilityService {
 
 			if (className.equals("com.tencent.mm.ui.LauncherUI")) {
 				boolean isMmberUi = isMemberChatUi(rootInfo);
-				if (isMmberUi == true && iflag ==1) {
+				if (isMmberUi == true && iflag == 1) {
 					AccessibilityNodeInfo inputInfo = AccessibilityHelper
 							.findNodeInfosById(rootInfo, strInputInfo);
-					 
-					if (inputInfo != null  ) {
-						Context context = getBaseContext();				 
+
+					if (inputInfo != null) {
+						Context context = getBaseContext();
 						AccessibilityHelper.doSendText(rootInfo, context, "开始");
 						iflag = 2;
 					}
@@ -369,13 +371,13 @@ public class hbSesrvice extends AccessibilityService {
 			// className = event.getClassName().toString();
 
 			boolean isMmberUi = isMemberChatUi(rootInfo);
-			Log.e("wolf","iflag=" + String.valueOf(iflag));
-			if (isMmberUi == true && iflag ==1) {
+			Log.e("wolf", "iflag=" + String.valueOf(iflag));
+			if (isMmberUi == true && iflag == 1) {
 				AccessibilityNodeInfo inputInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strInputInfo);
-				 
-				if (inputInfo != null  ) {
-					Context context = getBaseContext();				 
+
+				if (inputInfo != null) {
+					Context context = getBaseContext();
 					AccessibilityHelper.doSendText(rootInfo, context, "开始");
 					iflag = 2;
 				}
@@ -386,17 +388,41 @@ public class hbSesrvice extends AccessibilityService {
 				Log.e("wolf", "find first pp=" + firstPerson);
 				AccessibilityNodeInfo inputInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strInputInfo);
-				 if (firstPerson != "null") {
-						if (inputInfo != null  ) {
-							Context context = getBaseContext();
-							String firstMsg = firstPerson + "为庄开始押注上分";
-							AccessibilityHelper.doSendText(rootInfo, context, firstMsg);
-							iflag = 3;
-						} 
-				 }
+				if (firstPerson != "null") {
+					if (inputInfo != null) {
+						Context context = getBaseContext();
+						String firstMsg = firstPerson + "为庄开始押注上分";
+						AccessibilityHelper.doSendText(rootInfo, context,
+								firstMsg);
+						iflag = 3;
+					}
+				}
 
 			}
 
+			if (isMmberUi == true && iflag == 3) {
+				AccessibilityHelper.updateSayInfoNum(rootInfo, detManList);
+			}
+			if (isMmberUi == true && iflag == 4) {
+				Iterator entries = detManList.entrySet().iterator();
+				String strNum = "封盘";
+				while (entries.hasNext()) {
+
+					Map.Entry entry = (Map.Entry) entries.next();
+
+					String key = (String) entry.getKey();
+
+					String value = (String) entry.getValue();
+					strNum = strNum + key + " 上分=" + value + " ";
+
+				}
+
+				Context context = getBaseContext();
+
+				AccessibilityHelper.doSendText(rootInfo, context, strNum);
+				iflag = 5;
+
+			}
 			if (1 == 1) {
 				return;
 			}
@@ -516,7 +542,6 @@ public class hbSesrvice extends AccessibilityService {
 				return true;
 			}
 
-			 
 		});
 
 		hideBtn.setOnClickListener(new OnClickListener() {
@@ -525,8 +550,8 @@ public class hbSesrvice extends AccessibilityService {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				viewHide = true;
-				//removeView();
-				
+				// removeView();
+				iflag = 4;
 				System.out.println("----------hideBtn");
 			}
 		});
@@ -536,10 +561,10 @@ public class hbSesrvice extends AccessibilityService {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				iflag= 1;
+				iflag = 1;
 				Toast.makeText(getApplicationContext(), "you click UpdateBtn",
 						Toast.LENGTH_SHORT).show();
-		     
+
 			}
 		});
 	}
@@ -595,7 +620,7 @@ public class hbSesrvice extends AccessibilityService {
 			// TODO Auto-generated method stub
 			// 根据收到的消息分别处理
 			if (msg.what == UPDATE_PIC) {
-			 
+
 				if (!viewHide)
 					refresh();
 			} else {
