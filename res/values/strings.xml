@@ -7,4 +7,6 @@
     <string name="float_text">可以拖动我</string>
      <string name="float_bt_1">结束封盘</string>
       <string name="float_bt_2">开始</string>
+  <string name="getdetail">红包分析</string>      
+      
 </resources>

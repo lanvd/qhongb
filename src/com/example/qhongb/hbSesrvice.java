@@ -54,6 +54,7 @@ public class hbSesrvice extends AccessibilityService {
 	// private AccessibilityHelper accessHelper ;
 	static String fileName = "mnt/sdcard/Y.txt";
 	private int iflag;
+	private int iHbDetailFlag;
 
 	private static final int UPDATE_PIC = 0x100;
 	private int statusBarHeight;// 状态栏高度
@@ -63,6 +64,7 @@ public class hbSesrvice extends AccessibilityService {
 	private Button updateBtn = null;
 	private HandlerUI handler = null;
 	private Thread updateThread = null;
+	private Button detailBtn = null;
 	private boolean viewAdded = false;// 透明窗体是否已经显示
 	private boolean viewHide = false; // 窗口隐藏
 	private WindowManager windowManager;
@@ -79,6 +81,7 @@ public class hbSesrvice extends AccessibilityService {
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
 		iflag = 0;
+		iHbDetailFlag = 0;
 		detManList = new HashMap<String, String>();
 		super.onServiceConnected();
 	}
@@ -359,9 +362,9 @@ public class hbSesrvice extends AccessibilityService {
 					.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI")) {
 				Log.e(LOGTAG, "红包详情");
 
-				// 开始打开红包
-				if (detailInfo.iLastAction == 1) {
-					detailInfo.iLastAction = 2;
+				// 开 
+				if (iHbDetailFlag == 1) {
+					 
 					openPacket(1);
 				}
 
@@ -375,7 +378,6 @@ public class hbSesrvice extends AccessibilityService {
 			if (isMmberUi == true && iflag == 1) {
 				AccessibilityNodeInfo inputInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strInputInfo);
-
 				if (inputInfo != null) {
 					Context context = getBaseContext();
 					AccessibilityHelper.doSendText(rootInfo, context, "开始");
@@ -423,11 +425,8 @@ public class hbSesrvice extends AccessibilityService {
 				iflag = 5;
 
 			}
-			if (1 == 1) {
-				return;
-			}
-
-			if (isMmberUi == true) {
+	 
+/*			if (isMmberUi == true) {
 				AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
 						.findNodeInfosById(rootInfo, strHongbaoInfo);
 				if (hongbaoInfo != null) {
@@ -457,9 +456,9 @@ public class hbSesrvice extends AccessibilityService {
 				} else if (detailInfo.iLastAction == 3 && detailInfo.iEnd == 0) {
 					openPacket(1);
 				}
-			}
+			}*/
 
-			if (detailInfo.iEnd == 1) {
+			if (detailInfo.iEnd == 1 && iHbDetailFlag == 1) {
 				Log.e(LOGTAG, "结束");
 				String stsBack = "com.tencent.mm:id/fa";
 				String strMsg = String.valueOf(mapPersons.size());
@@ -506,6 +505,8 @@ public class hbSesrvice extends AccessibilityService {
 		text = (TextView) view.findViewById(R.id.flowspeed);
 		hideBtn = (Button) view.findViewById(R.id.hideBtn);
 		updateBtn = (Button) view.findViewById(R.id.updateBtn);
+		
+		detailBtn = (Button) view.findViewById(R.id.getDetailBtn);
 		windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
 		/*
 		 * LayoutParams.TYPE_SYSTEM_ERROR：保证该悬浮窗所有View的最上层
@@ -549,19 +550,31 @@ public class hbSesrvice extends AccessibilityService {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				viewHide = true;
+				//viewHide = true;
 				// removeView();
-				iflag = 4;
-				System.out.println("----------hideBtn");
+				iflag = 4;				
+				iHbDetailFlag = 0;
+				 
 			}
 		});
 
+		detailBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub				 
+				// removeView();
+				iHbDetailFlag = 1;
+				System.out.println("----------hideBtn");
+			}
+		});
 		updateBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				iflag = 1;
+				detManList.clear(); 
 				Toast.makeText(getApplicationContext(), "you click UpdateBtn",
 						Toast.LENGTH_SHORT).show();
 
