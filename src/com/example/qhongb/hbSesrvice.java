@@ -346,17 +346,7 @@ public class hbSesrvice extends AccessibilityService {
 		case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
 
 			if (className.equals("com.tencent.mm.ui.LauncherUI")) {
-				boolean isMmberUi = isMemberChatUi(rootInfo);
-				if (isMmberUi == true && iflag == 1) {
-					AccessibilityNodeInfo inputInfo = AccessibilityHelper
-							.findNodeInfosById(rootInfo, strInputInfo);
-
-					if (inputInfo != null) {
-						Context context = getBaseContext();
-						AccessibilityHelper.doSendText(rootInfo, context, "开始");
-						iflag = 2;
-					}
-				}
+				boolean isMmberUi = isMemberChatUi(rootInfo);	
 
 			} else if (className
 					.equals("com.tencent.mm.plugin.luckymoney.ui.LuckyMoneyDetailUI")) {
@@ -376,55 +366,14 @@ public class hbSesrvice extends AccessibilityService {
 			boolean isMmberUi = isMemberChatUi(rootInfo);
 			Log.e("wolf", "iflag=" + String.valueOf(iflag));
 			if (isMmberUi == true && iflag == 1) {
-				AccessibilityNodeInfo inputInfo = AccessibilityHelper
-						.findNodeInfosById(rootInfo, strInputInfo);
-				if (inputInfo != null) {
-					Context context = getBaseContext();
-					AccessibilityHelper.doSendText(rootInfo, context, "开始");
-					iflag = 2;
-				}
+		 
 			}
 			if (isMmberUi == true && iflag == 2) {
-				String firstPerson = AccessibilityHelper.firstPersonSay(
-						rootInfo, "抢");
-				Log.e("wolf", "find first pp=" + firstPerson);
-				AccessibilityNodeInfo inputInfo = AccessibilityHelper
-						.findNodeInfosById(rootInfo, strInputInfo);
-				if (firstPerson != "null") {
-					if (inputInfo != null) {
-						Context context = getBaseContext();
-						String firstMsg = firstPerson + "为庄开始押注上分";
-						AccessibilityHelper.doSendText(rootInfo, context,
-								firstMsg);
-						iflag = 3;
-					}
-				}
+ 
 
 			}
 
-			if (isMmberUi == true && iflag == 3) {
-				AccessibilityHelper.updateSayInfoNum(rootInfo, detManList);
-			}
-			if (isMmberUi == true && iflag == 4) {
-				Iterator entries = detManList.entrySet().iterator();
-				String strNum = "封盘";
-				while (entries.hasNext()) {
-
-					Map.Entry entry = (Map.Entry) entries.next();
-
-					String key = (String) entry.getKey();
-
-					String value = (String) entry.getValue();
-					strNum = strNum + key + " 上分=" + value + " ";
-
-				}
-
-				Context context = getBaseContext();
-
-				AccessibilityHelper.doSendText(rootInfo, context, strNum);
-				iflag = 5;
-
-			}
+ 
 	 
 /*			if (isMmberUi == true) {
 				AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
@@ -552,7 +501,10 @@ public class hbSesrvice extends AccessibilityService {
 				// TODO Auto-generated method stub
 				//viewHide = true;
 				// removeView();
-				iflag = 4;				
+				if (iflag == 3) {
+					iflag = 4;	
+				}
+							
 				iHbDetailFlag = 0;
 				 
 			}
