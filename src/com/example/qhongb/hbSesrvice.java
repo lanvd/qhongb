@@ -69,7 +69,7 @@ public class hbSesrvice extends AccessibilityService {
 	private boolean viewHide = false; // 窗口隐藏
 	private WindowManager windowManager;
 	private WindowManager.LayoutParams layoutParams;
-
+	private String hbDetailStr = "";
 	@Override
 	protected void onServiceConnected() {
 		// TODO Auto-generated method stub
@@ -251,6 +251,7 @@ public class hbSesrvice extends AccessibilityService {
 			if (hbEndInfo != null) {
 				Log.e(LOGTAG, "结束node找到");
 				detailInfo.iEnd = 1;
+				iHbDetailFlag = 2;
 			}
 
 			if (hbListViewNodeInfo != null) {
@@ -364,16 +365,16 @@ public class hbSesrvice extends AccessibilityService {
 			// className = event.getClassName().toString();
 
 			boolean isMmberUi = isMemberChatUi(rootInfo);
-			Log.e("wolf", "iflag=" + String.valueOf(iflag));
-			if (isMmberUi == true && iflag == 1) {
-		 
+			Log.e("wolf", "iHbDetailFlag=" + String.valueOf(iHbDetailFlag));
+	 
+			if (isMmberUi && iHbDetailFlag == 1) {				 
+				openPacket(1);
 			}
-			if (isMmberUi == true && iflag == 2) {
- 
-
-			}
-
- 
+			if (isMmberUi && hbDetailStr != "") {				 
+				AccessibilityHelper.doSendText(rootInfo, getApplicationContext(), hbDetailStr);
+				hbDetailStr = "";
+				iHbDetailFlag = 0;
+			} 
 	 
 /*			if (isMmberUi == true) {
 				AccessibilityNodeInfo hongbaoInfo = AccessibilityHelper
@@ -407,17 +408,19 @@ public class hbSesrvice extends AccessibilityService {
 				}
 			}*/
 
-			if (detailInfo.iEnd == 1 && iHbDetailFlag == 1) {
+			if ( iHbDetailFlag == 2) {
 				Log.e(LOGTAG, "结束");
 				String stsBack = "com.tencent.mm:id/fa";
 				String strMsg = String.valueOf(mapPersons.size());
 				ArrayList<LuckPerson> persons = new ArrayList<LuckPerson>();
 				Iterator iterator = mapPersons.keySet().iterator();
+				hbDetailStr = "++++红包详情++++\n";
 				while (iterator.hasNext()) {
 					Object key = iterator.next();
 					LuckPerson p = mapPersons.get(key);
 					Log.e(LOGTAG, p.toString());
 					p.title = strCurHbTitle;
+					hbDetailStr +=  key.toString()+":"+p.money+";";
 					persons.add(p);
 				}
 				Intent intent = new Intent();
@@ -501,11 +504,7 @@ public class hbSesrvice extends AccessibilityService {
 				// TODO Auto-generated method stub
 				//viewHide = true;
 				// removeView();
-				if (iflag == 3) {
-					iflag = 4;	
-				}
-							
-				iHbDetailFlag = 0;
+			 
 				 
 			}
 		});
@@ -517,7 +516,7 @@ public class hbSesrvice extends AccessibilityService {
 				// TODO Auto-generated method stub				 
 				// removeView();
 				iHbDetailFlag = 1;
-				System.out.println("----------hideBtn");
+				System.out.println("----------detailBtn");
 			}
 		});
 		updateBtn.setOnClickListener(new OnClickListener() {
@@ -525,8 +524,8 @@ public class hbSesrvice extends AccessibilityService {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				iflag = 1;
-				detManList.clear(); 
+				//iflag = 1;
+				//detManList.clear(); 
 				Toast.makeText(getApplicationContext(), "you click UpdateBtn",
 						Toast.LENGTH_SHORT).show();
 
