@@ -119,11 +119,8 @@ public class MainActivity extends Activity {
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
 				//String uuid = getUUID();
-				Intent intent = new Intent(MainActivity.this ,Qr.class);
-				Bundle bd = new Bundle();
-				bd.putString("UUID", "4aKpWVjM-g==");
-				intent.putExtras(bd);
-				startActivity(intent);
+				//Intent intent = new Intent(MainActivity.this ,Qr.class);
+	
 				
 			}
 

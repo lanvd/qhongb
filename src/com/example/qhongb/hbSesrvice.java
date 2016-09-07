@@ -14,6 +14,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -76,7 +77,7 @@ public class hbSesrvice extends AccessibilityService {
 		detailInfo = new DetailInfo();
 		mapPersons = new HashMap<String, LuckPerson>();
 		mapTitle = new HashMap<String, String>();
-		strCurHbTitle = new String();
+		strCurHbTitle ="";
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
 		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
@@ -124,6 +125,7 @@ public class hbSesrvice extends AccessibilityService {
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
+		Toast.makeText(this, "服务onCreate", Toast.LENGTH_LONG).show();
 		createFloatView();
 	}
 
@@ -132,6 +134,7 @@ public class hbSesrvice extends AccessibilityService {
 	public void onStart(Intent intent, int startId) {
 		// TODO Auto-generated method stub
 		super.onStart(intent, startId);
+		Toast.makeText(this, "服务onStart", Toast.LENGTH_LONG).show();
 		viewHide = false;
 		refresh();
 	}
@@ -269,23 +272,20 @@ public class hbSesrvice extends AccessibilityService {
 			List<AccessibilityNodeInfo> list = nodeInfo
 					.findAccessibilityNodeInfosByText("红包详情");
 
-			for (AccessibilityNodeInfo n : list) {
-				String text = n.getText().toString();
-				Log.e("wolf", text);
-			}
+ 
 			// b99 领取12/20个
-			List<AccessibilityNodeInfo> listDetail = nodeInfo
+/*			List<AccessibilityNodeInfo> listDetail = nodeInfo
 					.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/b99");
 			String strLen = String.valueOf(listDetail.size());
 			Log.e("wolf", strLen);
 			for (AccessibilityNodeInfo n : listDetail) {
 				String text = n.getText().toString();
 				Log.e("wolf", text);
-			}
+			}*/
 			List<AccessibilityNodeInfo> listDetailInfo = nodeInfo
 					.findAccessibilityNodeInfosByViewId("com.tencent.mm:id/aes");
-			strLen = String.valueOf(listDetailInfo.size());
-			Log.e("wolf", strLen);
+			//strLen = String.valueOf(listDetailInfo.size());
+		    //Log.e("wolf", strLen);
 			ArrayList<LuckPerson> persons = new ArrayList<LuckPerson>();
 			for (AccessibilityNodeInfo n : listDetailInfo) {
 
@@ -421,19 +421,21 @@ public class hbSesrvice extends AccessibilityService {
 					Log.e(LOGTAG, p.toString());
 					p.title = strCurHbTitle;
 					hbDetailStr +=  key.toString()+":"+p.money+";";
-					persons.add(p);
+					//persons.add(p);
+					
 				}
-				Intent intent = new Intent();
+/*				Intent intent = new Intent();
 				intent.setAction("wolf.test");
 				Bundle bundle = new Bundle();
 				bundle.putSerializable("user", persons);
 				intent.putExtras(bundle);
-				sendBroadcast(intent);
+				sendBroadcast(intent);*/
 				Log.e(LOGTAG, "结束 map len=" + strMsg);
 				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
 				AccessibilityNodeInfo hBack = AccessibilityHelper
 						.findNodeInfosById(nodeInfo, stsBack);
 				detailInfo = new DetailInfo();
+				mapPersons.clear();
 				AccessibilityHelper.performClick(hBack);
 			}
 			break;
@@ -444,7 +446,7 @@ public class hbSesrvice extends AccessibilityService {
 	@Override
 	public void onInterrupt() {
 		// TODO Auto-generated method stub
-
+		removeView();
 	}
 
 	private void createFloatView() {
@@ -455,8 +457,8 @@ public class hbSesrvice extends AccessibilityService {
 
 		view = LayoutInflater.from(this).inflate(R.layout.floatview, null);
 		text = (TextView) view.findViewById(R.id.flowspeed);
-		hideBtn = (Button) view.findViewById(R.id.hideBtn);
-		updateBtn = (Button) view.findViewById(R.id.updateBtn);
+		//hideBtn = (Button) view.findViewById(R.id.hideBtn);
+		//updateBtn = (Button) view.findViewById(R.id.updateBtn);
 		
 		detailBtn = (Button) view.findViewById(R.id.getDetailBtn);
 		windowManager = (WindowManager) this.getSystemService(WINDOW_SERVICE);
@@ -497,7 +499,7 @@ public class hbSesrvice extends AccessibilityService {
 
 		});
 
-		hideBtn.setOnClickListener(new OnClickListener() {
+/*		hideBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -507,7 +509,7 @@ public class hbSesrvice extends AccessibilityService {
 			 
 				 
 			}
-		});
+		});*/
 
 		detailBtn.setOnClickListener(new OnClickListener() {
 
@@ -515,11 +517,23 @@ public class hbSesrvice extends AccessibilityService {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub				 
 				// removeView();
-				iHbDetailFlag = 1;
-				System.out.println("----------detailBtn");
+				if (iHbDetailFlag == 1) {
+					iHbDetailFlag = 0;
+					detailBtn.setBackgroundColor(Color.BLACK);	
+					Toast.makeText(getApplicationContext(), "取消获取红包详情",
+							Toast.LENGTH_SHORT).show();
+				} else {
+					iHbDetailFlag = 1;
+					Toast.makeText(getApplicationContext(), "开始准备获取红包详情",
+							Toast.LENGTH_SHORT).show();
+					detailBtn.setBackgroundColor(Color.RED);					
+					
+				}
+
+				
 			}
 		});
-		updateBtn.setOnClickListener(new OnClickListener() {
+/*		updateBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
@@ -530,7 +544,7 @@ public class hbSesrvice extends AccessibilityService {
 						Toast.LENGTH_SHORT).show();
 
 			}
-		});
+		});*/
 	}
 
 	private void refreshView(int x, int y) {
