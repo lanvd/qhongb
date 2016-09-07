@@ -420,7 +420,7 @@ public class hbSesrvice extends AccessibilityService {
 					LuckPerson p = mapPersons.get(key);
 					Log.e(LOGTAG, p.toString());
 					p.title = strCurHbTitle;
-					hbDetailStr +=  key.toString()+":"+p.money+";";
+					hbDetailStr +=  key.toString()+"	"+p.time+"	"+p.money+";";
 					//persons.add(p);
 					
 				}
@@ -431,6 +431,7 @@ public class hbSesrvice extends AccessibilityService {
 				intent.putExtras(bundle);
 				sendBroadcast(intent);*/
 				Log.e(LOGTAG, "½áÊø map len=" + strMsg);
+				detailBtn.setBackgroundColor(Color.BLACK);	
 				AccessibilityNodeInfo nodeInfo = getRootInActiveWindow();
 				AccessibilityNodeInfo hBack = AccessibilityHelper
 						.findNodeInfosById(nodeInfo, stsBack);
