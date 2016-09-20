@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:layout_width="wrap_content"  
+    android:layout_height="wrap_content"  
+    >  
+  
+    <!-- android:updatePeriodMillis="10000"> -->  
+  
+    <TextView  
+        android:id="@+id/flowspeed"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:layout_alignParentTop="true"  
+        android:layout_centerInParent="true"  
+        android:text="@string/float_text"  
+        android:textColor="#000000" />  
+  
+<!--     <Button  
+        android:id="@+id/hideBtn"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:layout_below="@id/flowspeed"  
+        android:layout_centerInParent="true"  
+        android:layout_marginTop="15dp"  
+         android:contentDescription="结束"  
+        android:text="@string/float_bt_1" />  
+  
+    <Button  
+        android:id="@+id/updateBtn"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:layout_below="@id/hideBtn"  
+        android:layout_centerInParent="true"  
+        android:contentDescription="开始"  
+        android:paddingTop="15dp"  
+        android:text="@string/float_bt_2" /> -->  
+      <Button  
+        android:id="@+id/getDetailBtn"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:layout_below="@id/flowspeed"  
+        android:layout_centerInParent="true"  
+        android:contentDescription="update"  
+        android:paddingTop="15dp"  
+        android:text="@string/getdetail" />  
+    <TextView  
+        android:id="@+id/usage"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content"  
+        android:layout_below="@id/getDetailBtn"  
+        android:layout_centerInParent="true"  
+        android:paddingTop="15dp"  
+        android:text="@string/float_text" 
+        android:textColor="#000000" />  
+  
+</RelativeLayout>  
