@@ -71,6 +71,7 @@ public class hbSesrvice extends AccessibilityService {
 	private WindowManager windowManager;
 	private WindowManager.LayoutParams layoutParams;
 	private String hbDetailStr = "";
+	static boolean uiRunning = false;
 	@Override
 	protected void onServiceConnected() {
 		// TODO Auto-generated method stub
@@ -80,7 +81,15 @@ public class hbSesrvice extends AccessibilityService {
 		strCurHbTitle ="";
 		Log.d(LOGTAG, "SERVICE CONNECT");
 		// writeFileSdcard(fileName,"SERVICE CONNECT");
-		Toast.makeText(this, "服务连接上", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "服务连接上", Toast.LENGTH_SHORT).show();
+		
+		if (viewHide)
+			viewHide = false;
+		if (uiRunning == false) {
+			
+			createFloatView();
+			uiRunning = true;
+		}
 		iflag = 0;
 		iHbDetailFlag = 0;
 		detManList = new HashMap<String, String>();
@@ -115,6 +124,7 @@ public class hbSesrvice extends AccessibilityService {
 	 * 关闭悬浮窗
 	 */
 	public void removeView() {
+		
 		if (viewAdded) {
 			windowManager.removeView(view);
 			viewAdded = false;
@@ -125,8 +135,9 @@ public class hbSesrvice extends AccessibilityService {
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
-		Toast.makeText(this, "服务onCreate", Toast.LENGTH_LONG).show();
-		createFloatView();
+		 
+		Toast.makeText(this, "服务onCreate", Toast.LENGTH_SHORT).show();
+
 	}
 
 	@SuppressWarnings("deprecation")
@@ -134,8 +145,9 @@ public class hbSesrvice extends AccessibilityService {
 	public void onStart(Intent intent, int startId) {
 		// TODO Auto-generated method stub
 		super.onStart(intent, startId);
-		Toast.makeText(this, "服务onStart", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "服务onStart", Toast.LENGTH_SHORT).show();
 		viewHide = false;
+		
 		refresh();
 	}
 
@@ -145,8 +157,11 @@ public class hbSesrvice extends AccessibilityService {
 		super.onDestroy();
 		removeView();
 		iflag = 0;
+		viewHide = true;
+		uiRunning = false;
+		//updateThread.interrupt();
 		Log.d(LOGTAG, "SERVICE DESTORY");
-		Toast.makeText(this, "服务destory", Toast.LENGTH_LONG).show();
+		Toast.makeText(this, "服务destory", Toast.LENGTH_SHORT).show();
 	}
 
 	public void recycle(AccessibilityNodeInfo info) {
@@ -617,12 +632,15 @@ public class hbSesrvice extends AccessibilityService {
 	 * 
 	 */
 	class UpdateUI implements Runnable {
-
+		boolean running = true;
+		public void setStop() {
+			running = false;
+		}
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
 			// 如果没有中断就一直运行
-			while (!Thread.currentThread().isInterrupted()) {
+			while (!Thread.currentThread().isInterrupted() ) {
 				Message msg = handler.obtainMessage();
 				msg.what = UPDATE_PIC; // 设置消息标识
 				handler.sendMessage(msg);
